@@ -16,6 +16,12 @@ Let Claude, Cursor, Gemini or any tool-calling AI see your classes, assignments,
 
 ---
 
+<p align="center">
+  <img src="docs/images/weekly-digest.png" alt="Claude answering &quot;What's due this week?&quot; with overdue work, upcoming due dates, announcements and a suggested order" width="820">
+  <br>
+  <sub>Asking Claude "What's due this week?" with SongNgan connected. Sample data.</sub>
+</p>
+
 SongNgan runs on your own computer with your own Google Cloud OAuth client. There is no shared app, no server in between and nothing to pay for. Requests go straight from your machine to Google, and your sign-in token stays in the OS keychain.
 
 ## What you can ask
@@ -64,7 +70,11 @@ npm install
 npm run setup -- path/to/client_secret.json
 ```
 
-Setup copies the client into `~/.song-ngan/`, asks which features to enable and opens Google sign-in in your browser. Google warns that the app is unverified; because the app is your own, choose **Advanced > Go to SongNgan**.
+Setup copies the client into `~/.song-ngan/`, asks which features to enable and opens Google sign-in in your browser. Google warns that the app is unverified; because the app is your own, choose **Advanced > Go to SongNgan**. When it finishes, the browser shows this page:
+
+<p align="center">
+  <img src="docs/images/sign-in.png" alt="SongNgan sign-in page saying You are connected" width="600">
+</p>
 
 Check the result:
 
