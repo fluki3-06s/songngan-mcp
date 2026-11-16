@@ -1,0 +1,133 @@
+{
+  "manifest_version": "0.2",
+  "name": "song-ngan",
+  "display_name": "SongNgan for Google Classroom",
+  "version": "0.2.0",
+  "description": "Let Claude see your Google Classroom: classes, assignments, due dates, attached files and grades. Runs only on your computer.",
+  "long_description": "SongNgan connects Claude to your own Google Classroom account. Ask what is due this week, get assignment instructions, read attached PDFs, Docs and Slides, check grades, and optionally upload files, turn in work and add due dates to Google Calendar. Your Google token stays in your computer's keychain; nothing passes through a third-party server.",
+  "author": {
+    "name": "SongNgan contributors",
+    "url": "https://github.com/fluki3-06s/song-ngan"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fluki3-06s/song-ngan"
+  },
+  "homepage": "https://github.com/fluki3-06s/song-ngan",
+  "documentation": "https://github.com/fluki3-06s/song-ngan/#install",
+  "support": "https://github.com/fluki3-06s/song-ngan/issues",
+  "license": "MIT",
+  "keywords": [
+    "google-classroom",
+    "classroom",
+    "students",
+    "homework",
+    "assignments"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/dist/index.js",
+        "serve"
+      ],
+      "env": {
+        "SONGNGAN_CLIENT_SECRET": "${user_config.client_secret}",
+        "SONGNGAN_ENABLE_FILES": "${user_config.enable_files}",
+        "SONGNGAN_ENABLE_WRITE": "${user_config.enable_write}"
+      }
+    }
+  },
+  "user_config": {
+    "client_secret": {
+      "type": "file",
+      "title": "client_secret.json",
+      "description": "Desktop OAuth client downloaded from Google Cloud Console. See the setup guide.",
+      "required": true
+    },
+    "enable_files": {
+      "type": "boolean",
+      "title": "Read attached files",
+      "description": "Allow reading PDFs, Docs, Slides and Sheets attached to assignments (Google Drive read-only).",
+      "default": true,
+      "required": false
+    },
+    "enable_write": {
+      "type": "boolean",
+      "title": "Write actions",
+      "description": "Allow uploading to Drive, attaching files, turning in work and adding due dates to Google Calendar.",
+      "default": false,
+      "required": false
+    }
+  },
+  "tools": [
+    {
+      "name": "weekly_digest",
+      "description": "Overdue work, upcoming due dates and recent announcements across all classes"
+    },
+    {
+      "name": "list_courses",
+      "description": "List enrolled classes"
+    },
+    {
+      "name": "list_assignments",
+      "description": "List assignments with status, due date and grade"
+    },
+    {
+      "name": "get_assignment",
+      "description": "Full instructions, materials and submission state of one assignment"
+    },
+    {
+      "name": "list_announcements",
+      "description": "Recent teacher announcements"
+    },
+    {
+      "name": "list_course_materials",
+      "description": "Learning materials posted in a class"
+    },
+    {
+      "name": "get_grades",
+      "description": "Graded work and per-class totals"
+    },
+    {
+      "name": "read_material",
+      "description": "Read any attached file: Docs, Slides, Sheets, PDF (incl. scanned), Word, PowerPoint, Excel, images"
+    },
+    {
+      "name": "download_material",
+      "description": "Save an attached file to the computer (notebooks, code, datasets, templates)"
+    },
+    {
+      "name": "read_link",
+      "description": "Read links: web pages, public Google Forms, online files, YouTube info"
+    },
+    {
+      "name": "upload_to_drive",
+      "description": "Upload a local file to Google Drive"
+    },
+    {
+      "name": "attach_to_assignment",
+      "description": "Attach a Drive file to a submission"
+    },
+    {
+      "name": "turn_in",
+      "description": "Turn in an assignment (asks for confirmation)"
+    },
+    {
+      "name": "add_to_calendar",
+      "description": "Add an assignment due date to Google Calendar"
+    }
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  }
+}
