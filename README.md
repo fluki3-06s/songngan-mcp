@@ -51,8 +51,8 @@ Sign in to Google Cloud with any Google account. Each link below opens the right
 ### 2. Build the server
 
 ```bash
-git clone https://github.com/fluki3-06s/song-ngan.git
-cd song-ngan
+git clone https://github.com/fluki3-06s/songngan-mcp.git
+cd songngan-mcp
 npm install
 ```
 
@@ -115,7 +115,7 @@ Restart your AI client afterwards. Your sign-in and settings in `~/.song-ngan/` 
 
 SongNgan can be installed by an AI coding agent such as Claude Code, Cursor or Gemini CLI. Give it this prompt:
 
-> Install the SongNgan MCP server for me by following AGENTS.md in https://github.com/fluki3-06s/song-ngan.
+> Install the SongNgan MCP server for me by following AGENTS.md in https://github.com/fluki3-06s/songngan-mcp.
 
 The agent follows [AGENTS.md](AGENTS.md). It does everything except the steps only you can do: creating the OAuth client in Google Cloud Console and approving the Google sign-in.
 

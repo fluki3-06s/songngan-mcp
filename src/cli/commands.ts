@@ -10,7 +10,7 @@ import type { Feature } from '../core/config.js';
 import { SongNganError } from '../core/errors.js';
 import type { Terminal } from './terminal.js';
 
-export const GUIDE_URL = 'https://github.com/fluki3-06s/song-ngan/#install';
+export const GUIDE_URL = 'https://github.com/fluki3-06s/songngan-mcp/#install';
 
 export interface Command {
   readonly name: string;

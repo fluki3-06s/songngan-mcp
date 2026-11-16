@@ -23,8 +23,8 @@ Node.js must be 20 or later. If it is missing or older, ask the user to install 
 If the repository is not cloned yet:
 
 ```bash
-git clone https://github.com/fluki3-06s/song-ngan.git
-cd song-ngan
+git clone https://github.com/fluki3-06s/songngan-mcp.git
+cd songngan-mcp
 ```
 
 Then, in the repository root:

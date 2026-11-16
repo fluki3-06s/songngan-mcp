@@ -14,13 +14,13 @@
   ],
   "license": "MIT",
   "author": "fluki3-06s",
-  "homepage": "https://github.com/fluki3-06s/song-ngan#readme",
+  "homepage": "https://github.com/fluki3-06s/songngan-mcp#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fluki3-06s/song-ngan.git"
+    "url": "git+https://github.com/fluki3-06s/songngan-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/fluki3-06s/song-ngan/issues"
+    "url": "https://github.com/fluki3-06s/songngan-mcp/issues"
   },
   "type": "module",
   "bin": {

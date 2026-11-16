@@ -7,15 +7,15 @@
   "long_description": "SongNgan connects Claude to your own Google Classroom account. Ask what is due this week, get assignment instructions, read attached PDFs, Docs and Slides, check grades, and optionally upload files, turn in work and add due dates to Google Calendar. Your Google token stays in your computer's keychain; nothing passes through a third-party server.",
   "author": {
     "name": "SongNgan contributors",
-    "url": "https://github.com/fluki3-06s/song-ngan"
+    "url": "https://github.com/fluki3-06s/songngan-mcp"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/fluki3-06s/song-ngan"
+    "url": "https://github.com/fluki3-06s/songngan-mcp"
   },
-  "homepage": "https://github.com/fluki3-06s/song-ngan",
-  "documentation": "https://github.com/fluki3-06s/song-ngan/#install",
-  "support": "https://github.com/fluki3-06s/song-ngan/issues",
+  "homepage": "https://github.com/fluki3-06s/songngan-mcp",
+  "documentation": "https://github.com/fluki3-06s/songngan-mcp/#install",
+  "support": "https://github.com/fluki3-06s/songngan-mcp/issues",
   "license": "MIT",
   "keywords": [
     "google-classroom",
