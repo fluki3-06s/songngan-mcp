@@ -92,22 +92,28 @@ export class MaterialReader {
       case 'application/pdf':
         return this.pdf(await this.drive.download(id), options);
     }
-    if (mime.startsWith(GOOGLE)) return { kind: 'google-file', note: `${mime.slice(GOOGLE.length)} files cannot be read. Open the link instead.` };
+    if (mime.startsWith(GOOGLE))
+      return { kind: 'google-file', note: `${mime.slice(GOOGLE.length)} files cannot be read. Open the link instead.` };
     const office = OFFICE_MIME_TYPES[mime];
     if (office) return { kind: office, text: OfficeExtractor.extract(await this.drive.download(id), office) };
-    if (ZIP_TYPES.has(mime)) return { kind: 'archive', text: `Files inside ${name}:\n${OfficeExtractor.listArchive(await this.drive.download(id))}` };
+    if (ZIP_TYPES.has(mime))
+      return { kind: 'archive', text: `Files inside ${name}:\n${OfficeExtractor.listArchive(await this.drive.download(id))}` };
     if (SUPPORTED_IMAGE_TYPES.has(mime) && size > 0 && size <= MAX_IMAGE_BYTES) {
       return MaterialReader.imageResult('image', await this.drive.download(id), mime, name);
     }
     if (MimeTypes.isText(mime) || MimeTypes.isTextName(name) || (size > 0 && size <= MAX_SNIFF_BYTES)) {
       const buffer = await this.drive.download(id);
-      if (MimeTypes.isText(mime) || TextTools.looksLikeText(buffer)) return MaterialReader.textResult(name, buffer.toString('utf8'));
+      if (MimeTypes.isText(mime) || TextTools.looksLikeText(buffer))
+        return MaterialReader.textResult(name, buffer.toString('utf8'));
     }
     const preview = await this.thumbnail(file);
     if (preview) {
       return { kind: MaterialReader.previewKind(mime), images: [preview], note: MaterialReader.previewNote(mime) };
     }
-    return { kind: 'unsupported', note: `Reading ${mime || 'this file type'} is not supported and Drive has no preview for it. Open the link instead.` };
+    return {
+      kind: 'unsupported',
+      note: `Reading ${mime || 'this file type'} is not supported and Drive has no preview for it. Open the link instead.`,
+    };
   }
 
   private async pdf(buffer: Buffer, options: ReadOptions): Promise<Extracted> {
@@ -133,7 +139,10 @@ export class MaterialReader {
     }
     const remaining = candidates.filter((page) => page > lastPage);
     const notes: string[] = [];
-    if (scanned.length > 0) notes.push(`${scanned.length} of ${totalPages} pages have no text layer (scanned or image-only); their images are attached.`);
+    if (scanned.length > 0)
+      notes.push(
+        `${scanned.length} of ${totalPages} pages have no text layer (scanned or image-only); their images are attached.`,
+      );
     if (remaining.length > 0) notes.push(`More page images available: call again with startPage=${remaining[0]}.`);
     const hasText = scanned.length < totalPages;
     return {
@@ -156,7 +165,10 @@ export class MaterialReader {
     const chosen = all ? sorted.filter((image) => image.width * image.height >= 40_000).slice(0, 3) : sorted.slice(0, 1);
     return chosen.flatMap((image, index) => {
       try {
-        const png = PngEncoder.encode({ data: MaterialReader.rgbaToRgb(image.data), width: image.width, height: image.height, channels: 3 }, 1400);
+        const png = PngEncoder.encode(
+          { data: MaterialReader.rgbaToRgb(image.data), width: image.width, height: image.height, channels: 3 },
+          1400,
+        );
         const part = RichResult.image(png, 'image/png', `PDF page ${page}${chosen.length > 1 ? ` image ${index + 1}` : ''}`);
         return part ? [part] : [];
       } catch {
@@ -254,7 +266,11 @@ export class MaterialReader {
   private static textResult(name: string, text: string): Extracted {
     if (!NotebookReader.isNotebook(name)) return { kind: 'text', text };
     try {
-      return { kind: 'notebook', text: NotebookReader.toText(text), note: 'Jupyter notebook shown cell by cell with its saved outputs.' };
+      return {
+        kind: 'notebook',
+        text: NotebookReader.toText(text),
+        note: 'Jupyter notebook shown cell by cell with its saved outputs.',
+      };
     } catch {
       return { kind: 'text', text };
     }

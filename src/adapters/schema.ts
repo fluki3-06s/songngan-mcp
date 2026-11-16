@@ -28,7 +28,13 @@ export class SchemaExporter {
       case 'gemini':
         return { name: tool.name, description: tool.description, parameters };
       case 'mcp':
-        return { name: tool.name, title: tool.title, description: tool.description, inputSchema: parameters, annotations: tool.annotations };
+        return {
+          name: tool.name,
+          title: tool.title,
+          description: tool.description,
+          inputSchema: parameters,
+          annotations: tool.annotations,
+        };
     }
   }
 

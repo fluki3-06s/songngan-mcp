@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -58,9 +59,18 @@ export class SetupCommand extends BaseCommand {
     t.print(`Guide: ${GUIDE_URL}`);
 
     let app = await this.app();
-    const source = SetupCommand.cleanPath(args[0] ?? (await t.ask('\n1) Path to client_secret.json (drag the file here):')));
-    if (!source) throw new SongNganError('No client_secret.json given.', `Create one first: ${GUIDE_URL}`);
-    t.success(`OAuth client saved to ${await app.config.importClientSecret(source)}`);
+    const existing = existsSync(app.config.clientSecretPath);
+    const question = existing
+      ? `\n1) Press Enter to keep ${app.config.clientSecretPath}, or drag a new client_secret.json here:`
+      : '\n1) Path to client_secret.json (drag the file here):';
+    const source = SetupCommand.cleanPath(args[0] ?? (await t.ask(question)));
+    if (source) {
+      t.success(`OAuth client saved to ${await app.config.importClientSecret(source)}`);
+    } else if (existing) {
+      t.success(`Using the OAuth client in ${app.config.clientSecretPath}`);
+    } else {
+      throw new SongNganError('No client_secret.json given.', `Create one first: ${GUIDE_URL}`);
+    }
 
     if (app.config.featuresFromEnv) {
       t.warn('Features are set by environment variables (SONGNGAN_FEATURES / SONGNGAN_ENABLE_*), skipping questions.');
@@ -103,13 +113,16 @@ export class StatusCommand extends BaseCommand {
     const t = this.terminal;
     t.heading('SongNgan status');
     t.print(`Config folder   : ${app.config.home}`);
-    t.print(
-      `OAuth client    : ${status.client === 'custom' ? `custom (${app.config.clientSecretPath})` : status.client}`,
-    );
+    t.print(`OAuth client    : ${status.client === 'custom' ? `custom (${app.config.clientSecretPath})` : status.client}`);
     t.print(`Features        : ${[...app.config.features].join(', ')}`);
     t.print(`Token storage   : ${status.storage}`);
     t.print(`Google account  : ${status.connected ? 'connected' : 'not connected'}`);
-    t.print(`Tools           : ${app.registry.list().map((tool) => tool.name).join(', ')}`);
+    t.print(
+      `Tools           : ${app.registry
+        .list()
+        .map((tool) => tool.name)
+        .join(', ')}`,
+    );
     if (status.missingScopes.length > 0) {
       t.warn(`Missing permissions: ${status.missingScopes.map((scope) => scope.split('/').pop()).join(', ')}`);
       t.warn('Run `npm run setup` to grant them.');
@@ -140,7 +153,8 @@ export class ToolsCommand extends BaseCommand {
   async run(args: string[]): Promise<number> {
     const { values } = parseArgs({ args, options: { format: { type: 'string', short: 'f', default: 'openai' } } });
     const format = values.format ?? 'openai';
-    if (!SchemaExporter.isFormat(format)) throw new SongNganError(`Unknown format: ${format}.`, `Use one of: ${SCHEMA_FORMATS.join(', ')}`);
+    if (!SchemaExporter.isFormat(format))
+      throw new SongNganError(`Unknown format: ${format}.`, `Use one of: ${SCHEMA_FORMATS.join(', ')}`);
     this.terminal.json((await this.app()).toolSchemas(format));
     return 0;
   }
@@ -148,7 +162,7 @@ export class ToolsCommand extends BaseCommand {
 
 export class CallCommand extends BaseCommand {
   readonly name = 'call';
-  readonly usage = "song-ngan call <tool> ['{\"json\":\"input\"}']";
+  readonly usage = 'song-ngan call <tool> [\'{"json":"input"}\']';
   readonly summary = 'Run one tool from the terminal, for testing.';
 
   async run(args: string[]): Promise<number> {
@@ -159,7 +173,10 @@ export class CallCommand extends BaseCommand {
       try {
         input = JSON.parse(raw);
       } catch {
-        throw new SongNganError('Tool input must be valid JSON.', `Example: song-ngan call list_assignments '{"status":["pending"]}'`);
+        throw new SongNganError(
+          'Tool input must be valid JSON.',
+          `Example: song-ngan call list_assignments '{"status":["pending"]}'`,
+        );
       }
     }
     const result = await (await this.app()).call(name, input);

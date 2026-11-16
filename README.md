@@ -109,7 +109,7 @@ git pull
 npm install
 ```
 
-Restart your AI client afterwards. Your sign-in and settings in `~/.song-ngan/` are kept.
+Restart your AI client afterwards. Your sign-in and settings in `~/.song-ngan/` are kept. If `npm run status` then shows `Missing permissions`, the new version needs extra access; run `npm run setup` once to grant it.
 
 ## Install with an AI agent
 
@@ -127,8 +127,11 @@ Tools are grouped into features. `read` is always on; `files` and `write` are ch
 |---|---|---|
 | `weekly_digest` | read | Overdue work, upcoming due dates and recent announcements in one call |
 | `list_courses` | read | Enrolled classes |
-| `list_assignments` | read | Assignments with status (`pending`, `overdue`, `submitted`, `returned`), due date and grade |
-| `get_assignment` | read | Full instructions, attached materials and your submission |
+| `list_assignments` | read | Assignments with status (`pending`, `overdue`, `submitted`, `returned`), topic, due date and grade; filter by class, topic, status or due window |
+| `get_assignment` | read | Full instructions, topic, attached materials, grading rubric and your submission with turn-in time, days late and the history of state and grade changes |
+| `search` | read | Find assignments, announcements and materials by keyword across classes |
+| `list_topics` | read | Topics (units or chapters) teachers use to group classwork |
+| `list_people` | read | Teachers and classmates in a class |
 | `list_announcements` | read | Teacher announcements |
 | `list_course_materials` | read | Materials posted in a class |
 | `get_grades` | read | Graded work and per-class totals |
@@ -144,6 +147,28 @@ Tools are grouped into features. `read` is always on; `files` and `write` are ch
 > Google only lets an app change submissions for assignments created by that same app. For assignments a teacher created on the Classroom website, `attach_to_assignment` returns a clear error with a link so you can attach the file yourself.
 
 To change features later, run `npm run setup` again.
+
+Read tools also return `structuredContent` with a published `outputSchema`, so clients and agents get typed JSON instead of parsing text.
+
+## Prompts
+
+Ready-made prompts appear in clients that support MCP prompts, for example as slash commands in Claude.
+
+| Prompt | Arguments | What it does |
+|---|---|---|
+| `plan_week` | `days` (optional) | Day-by-day study plan from overdue and upcoming work |
+| `assignment_checklist` | `courseId`, `assignmentId` | Summarizes an assignment and its materials into a checklist of deliverables |
+| `check_against_rubric` | `courseId`, `assignmentId`, `work` (optional file path) | Reviews your draft against the rubric or instructions before you turn it in |
+
+## Resources
+
+Clients that support MCP resources can attach Classroom data to a chat directly.
+
+| URI | Content |
+|---|---|
+| `songngan://courses` | Your active classes |
+| `songngan://courses/{courseId}` | One class with all of its assignments |
+| `songngan://courses/{courseId}/assignments/{assignmentId}` | One assignment with materials, rubric and submission; open work is listed for quick picking |
 
 ## CLI
 
@@ -191,15 +216,15 @@ Run from the cloned folder with `node dist/index.js <command>`.
 
 | Feature | Scopes |
 |---|---|
-| read | `classroom.courses.readonly`, `classroom.coursework.me.readonly`, `classroom.announcements.readonly`, `classroom.courseworkmaterials.readonly` |
+| read | `classroom.courses.readonly`, `classroom.coursework.me.readonly`, `classroom.announcements.readonly`, `classroom.courseworkmaterials.readonly`, `classroom.topics.readonly`, `classroom.rosters.readonly` |
 | files | `drive.readonly` |
 | write | `classroom.coursework.me`, `drive.file`, `calendar.events` |
 
 ## Development
 
 ```bash
-npm run typecheck
-npm test
+npm run check        # typecheck, lint, format check and tests
+npm run format       # apply Prettier
 npm run build
 npm run inspect      # MCP Inspector against dist/index.js
 ```
@@ -210,16 +235,16 @@ src/
 │   ├── google/      Classroom, Drive and Calendar gateways
 │   ├── readers/     File and link readers
 │   ├── tools/       Tool base class, read, file and write tools, registry
-│   ├── study.ts     Assignments, digest and grades
+│   ├── study.ts     Assignments, search, topics, people, digest and grades
 │   └── ...          Config, auth, token store, cache, retry
-├── adapters/        MCP server and JSON schema export
+├── adapters/        MCP server (tools, prompts, resources) and JSON schema export
 ├── cli/             Commands and terminal UI
 ├── application.ts   Composition root
 ├── index.ts         CLI entry
 └── lib.ts           Library entry
 ```
 
-To add a tool, extend `Tool` in `src/core/tools/`, register it in `ToolRegistry.catalog()` and add a test.
+To add a tool, extend `Tool` in `src/core/tools/`, register it in `ToolRegistry.catalog()` and add a test. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow and [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ## License
 

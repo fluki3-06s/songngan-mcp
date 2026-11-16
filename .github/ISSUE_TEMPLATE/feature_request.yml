@@ -1,0 +1,20 @@
+name: Feature request
+description: Suggest a new tool or improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to do
+      description: The task you want your AI to help with in Google Classroom.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed solution
+      description: A new tool, a new field in an existing tool, a prompt, anything.
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else

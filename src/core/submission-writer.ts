@@ -28,7 +28,8 @@ export class SubmissionWriter {
     const absolute = resolve(path);
     const info = await stat(absolute).catch(() => undefined);
     if (!info?.isFile()) throw new SongNganError(`File not found: ${absolute}`);
-    if (info.size > MAX_UPLOAD_BYTES) throw new SongNganError('The file is larger than 100 MB.', 'Upload it to Google Drive manually.');
+    if (info.size > MAX_UPLOAD_BYTES)
+      throw new SongNganError('The file is larger than 100 MB.', 'Upload it to Google Drive manually.');
     const fileName = name?.trim() || basename(absolute);
     const file = await this.drive.upload(absolute, fileName, MimeTypes.lookup(fileName));
     if (!file.id) throw new SongNganError('Google Drive did not return a file ID.');
@@ -53,7 +54,10 @@ export class SubmissionWriter {
     return { attached: true, link: submission.alternateLink ?? undefined };
   }
 
-  async turnIn(courseId: string, assignmentId: string): Promise<{ submitted: boolean; alreadySubmitted: boolean; link?: string }> {
+  async turnIn(
+    courseId: string,
+    assignmentId: string,
+  ): Promise<{ submitted: boolean; alreadySubmitted: boolean; link?: string }> {
     const submission = await this.requireSubmission(courseId, assignmentId);
     const link = submission.alternateLink ?? undefined;
     if (submission.state === 'TURNED_IN') return { submitted: true, alreadySubmitted: true, link };
@@ -64,7 +68,8 @@ export class SubmissionWriter {
 
   async remindOnCalendar(courseId: string, assignmentId: string): Promise<{ eventId?: string; link?: string; due: string }> {
     const assignment = await this.study.assignment(courseId, assignmentId);
-    if (!assignment.dueAt) throw new SongNganError('This assignment has no due date, so there is nothing to put on the calendar.');
+    if (!assignment.dueAt)
+      throw new SongNganError('This assignment has no due date, so there is nothing to put on the calendar.');
     const event = await this.calendar.addDueReminder({
       title: `Due: ${assignment.title} (${assignment.courseName})`,
       description: [assignment.description, assignment.link].filter(Boolean).join('\n\n'),
@@ -77,7 +82,10 @@ export class SubmissionWriter {
   private async requireSubmission(courseId: string, assignmentId: string): Promise<Submission & { id: string }> {
     const submission = await this.classroom.getMySubmission(courseId, assignmentId);
     if (!submission?.id) {
-      throw new SongNganError('No submission was found for this assignment.', 'Check that the class and assignment IDs are correct.');
+      throw new SongNganError(
+        'No submission was found for this assignment.',
+        'Check that the class and assignment IDs are correct.',
+      );
     }
     return { ...submission, id: submission.id };
   }

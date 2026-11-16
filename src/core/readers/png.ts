@@ -16,7 +16,8 @@ export class PngEncoder {
   static encode(image: RawImage, maxDimension = 1400): Buffer {
     const colorType = COLOR_TYPES[image.channels];
     if (colorType === undefined) throw new Error(`Unsupported channel count: ${image.channels}`);
-    if (image.data.length < image.width * image.height * image.channels) throw new Error('Image data is shorter than its dimensions.');
+    if (image.data.length < image.width * image.height * image.channels)
+      throw new Error('Image data is shorter than its dimensions.');
     const scaled = PngEncoder.downscale(image, maxDimension);
     const stride = scaled.width * scaled.channels;
     const raw = new Uint8Array((stride + 1) * scaled.height);

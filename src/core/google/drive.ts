@@ -20,9 +20,7 @@ export class DriveGateway {
   }
 
   async getFile(fileId: string): Promise<DriveFile> {
-    const { data } = await withRetry(() =>
-      this.api.files.get({ fileId, fields: FILE_FIELDS, supportsAllDrives: true }),
-    );
+    const { data } = await withRetry(() => this.api.files.get({ fileId, fields: FILE_FIELDS, supportsAllDrives: true }));
     return data;
   }
 
@@ -32,9 +30,7 @@ export class DriveGateway {
   }
 
   async exportBinary(fileId: string, mimeType: string): Promise<Buffer> {
-    const { data } = await withRetry(() =>
-      this.api.files.export({ fileId, mimeType }, { responseType: 'arraybuffer' }),
-    );
+    const { data } = await withRetry(() => this.api.files.export({ fileId, mimeType }, { responseType: 'arraybuffer' }));
     return Buffer.from(data as ArrayBuffer);
   }
 

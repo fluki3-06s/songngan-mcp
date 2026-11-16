@@ -40,7 +40,9 @@ export class GoogleFormParser {
       return undefined;
     }
     const items = GoogleFormParser.at(data, 1, 1);
-    const questions = Array.isArray(items) ? items.map(GoogleFormParser.question).filter((q): q is FormQuestion => q !== undefined) : [];
+    const questions = Array.isArray(items)
+      ? items.map(GoogleFormParser.question).filter((q): q is FormQuestion => q !== undefined)
+      : [];
     return {
       title: GoogleFormParser.text(GoogleFormParser.at(data, 3)) ?? GoogleFormParser.text(GoogleFormParser.at(data, 1, 8)),
       description: GoogleFormParser.text(GoogleFormParser.at(data, 1, 0)),

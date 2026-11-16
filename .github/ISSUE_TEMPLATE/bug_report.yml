@@ -1,0 +1,45 @@
+name: Bug report
+description: Something does not work as described
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you asked or ran, and what you saw instead.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: input
+    id: tool
+    attributes:
+      label: Tool or command
+      placeholder: search, get_assignment, npm run setup ...
+  - type: textarea
+    id: status
+    attributes:
+      label: Output of `npm run status`
+      description: Remove your email address before pasting.
+      render: text
+  - type: textarea
+    id: error
+    attributes:
+      label: Error message
+      render: text
+  - type: input
+    id: client
+    attributes:
+      label: AI client
+      placeholder: Claude Desktop, Claude Code, Cursor ...
+  - type: input
+    id: env
+    attributes:
+      label: OS and Node.js version
+      placeholder: Windows 11, Node.js 22.11
+    validations:
+      required: true

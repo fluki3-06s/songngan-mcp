@@ -9,6 +9,9 @@ import {
   ListAssignmentsTool,
   ListCourseMaterialsTool,
   ListCoursesTool,
+  ListPeopleTool,
+  ListTopicsTool,
+  SearchTool,
   WeeklyDigestTool,
 } from './read-tools.js';
 import { AddToCalendarTool, AttachToAssignmentTool, TurnInTool, UploadToDriveTool } from './write-tools.js';
@@ -29,6 +32,9 @@ export class ToolRegistry {
       new ListAnnouncementsTool(),
       new ListCourseMaterialsTool(),
       new GetGradesTool(),
+      new ListTopicsTool(),
+      new SearchTool(),
+      new ListPeopleTool(),
       new ReadMaterialTool(),
       new ReadLinkTool(),
       new DownloadMaterialTool(),

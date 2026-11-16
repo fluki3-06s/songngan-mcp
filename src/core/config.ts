@@ -13,6 +13,8 @@ const SCOPES: Readonly<Record<Feature, readonly string[]>> = {
     'https://www.googleapis.com/auth/classroom.coursework.me.readonly',
     'https://www.googleapis.com/auth/classroom.announcements.readonly',
     'https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly',
+    'https://www.googleapis.com/auth/classroom.topics.readonly',
+    'https://www.googleapis.com/auth/classroom.rosters.readonly',
   ],
   files: ['https://www.googleapis.com/auth/drive.readonly'],
   write: [
@@ -40,7 +42,9 @@ export class AppConfig {
     const fromEnv = AppConfig.featuresFromEnvironment(env);
     const features = new Set<Feature>(['read', ...(fromEnv ?? settings.features ?? [])]);
     const customSecret = env.SONGNGAN_CLIENT_SECRET?.trim();
-    const clientSecretPath = resolve(customSecret && !customSecret.includes('${') ? customSecret : join(home, 'client_secret.json'));
+    const clientSecretPath = resolve(
+      customSecret && !customSecret.includes('${') ? customSecret : join(home, 'client_secret.json'),
+    );
     return new AppConfig(home, clientSecretPath, features, fromEnv !== undefined);
   }
 

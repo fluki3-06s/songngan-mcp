@@ -23,7 +23,11 @@ describe('AppConfig', () => {
   });
 
   it('lets environment variables override saved features', async () => {
-    const config = await AppConfig.load({ SONGNGAN_HOME: await tempHome(), SONGNGAN_ENABLE_FILES: 'false', SONGNGAN_ENABLE_WRITE: 'true' });
+    const config = await AppConfig.load({
+      SONGNGAN_HOME: await tempHome(),
+      SONGNGAN_ENABLE_FILES: 'false',
+      SONGNGAN_ENABLE_WRITE: 'true',
+    });
     expect(config.featuresFromEnv).toBe(true);
     expect(config.has('write')).toBe(true);
     expect(config.has('files')).toBe(false);
@@ -31,7 +35,10 @@ describe('AppConfig', () => {
   });
 
   it('ignores unresolved extension placeholders', async () => {
-    const config = await AppConfig.load({ SONGNGAN_HOME: await tempHome(), SONGNGAN_ENABLE_FILES: '${user_config.enable_files}' });
+    const config = await AppConfig.load({
+      SONGNGAN_HOME: await tempHome(),
+      SONGNGAN_ENABLE_FILES: '${user_config.enable_files}',
+    });
     expect(config.featuresFromEnv).toBe(false);
   });
 

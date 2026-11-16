@@ -18,7 +18,8 @@ export class LinkResolver {
     }
     if (url.protocol !== 'https:' && url.protocol !== 'http:') throw new SongNganError('Only http and https links can be read.');
     const host = url.hostname.replace(/^www\./, '').toLowerCase();
-    if (host === 'forms.gle' || (host === 'docs.google.com' && url.pathname.startsWith('/forms/'))) return { kind: 'form', url: url.href };
+    if (host === 'forms.gle' || (host === 'docs.google.com' && url.pathname.startsWith('/forms/')))
+      return { kind: 'form', url: url.href };
     if (DRIVE_HOSTS.has(host)) {
       const fileId = /\/d\/([A-Za-z0-9_-]{10,})/.exec(url.pathname)?.[1] ?? url.searchParams.get('id') ?? undefined;
       if (fileId) return { kind: 'drive', fileId, url: url.href };

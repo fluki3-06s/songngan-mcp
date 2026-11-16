@@ -5,7 +5,11 @@ import type {
   CourseMaterial,
   CourseWork,
   Material,
+  Rubric,
+  Student,
   Submission,
+  Teacher,
+  Topic,
 } from './google/classroom.js';
 
 export const ASSIGNMENT_STATUSES = ['pending', 'overdue', 'submitted', 'returned'] as const;
@@ -34,6 +38,8 @@ export interface AssignmentSummary {
   id: string;
   title: string;
   type?: string;
+  topicId?: string;
+  topic?: string;
   status: AssignmentStatus;
   late: boolean;
   dueAt?: string;
@@ -51,13 +57,58 @@ export interface SubmissionSummary {
   draftGrade?: number;
   attachments: Resource[];
   updatedAt?: string;
+  turnedInAt?: string;
+  daysLate?: number;
+  history: SubmissionEvent[];
   link?: string;
+}
+
+export interface SubmissionEvent {
+  at?: string;
+  state?: string;
+  grade?: number;
+  maxPoints?: number;
+  change?: string;
+}
+
+export interface RubricLevel {
+  title?: string;
+  description?: string;
+  points?: number;
+}
+
+export interface RubricCriterion {
+  title?: string;
+  description?: string;
+  levels: RubricLevel[];
+}
+
+export interface RubricSummary {
+  id: string;
+  maxPoints?: number;
+  criteria: RubricCriterion[];
 }
 
 export interface AssignmentDetail extends AssignmentSummary {
   description?: string;
   materials: Resource[];
+  rubrics: RubricSummary[];
   submission?: SubmissionSummary;
+}
+
+export interface TopicSummary {
+  courseId: string;
+  courseName: string;
+  id: string;
+  name: string;
+  updatedAt?: string;
+}
+
+export interface PersonSummary {
+  role: 'teacher' | 'student';
+  userId: string;
+  name: string;
+  email?: string;
 }
 
 export interface AnnouncementSummary {
@@ -128,6 +179,7 @@ export class ClassroomMapper {
       id: work.id ?? '',
       title: work.title ?? 'Untitled assignment',
       type: ClassroomMapper.value(work.workType),
+      topicId: ClassroomMapper.value(work.topicId),
       status: ClassroomMapper.status(submission, due, now),
       late: submission?.late ?? false,
       dueAt: due?.toISOString(),
@@ -138,16 +190,30 @@ export class ClassroomMapper {
     };
   }
 
-  static detail(course: CourseSummary, work: CourseWork, submission: Submission | undefined, now: number): AssignmentDetail {
+  static detail(
+    course: CourseSummary,
+    work: CourseWork,
+    submission: Submission | undefined,
+    now: number,
+    rubrics: readonly Rubric[] = [],
+  ): AssignmentDetail {
+    const due = ClassroomMapper.dueDate(work);
     return {
       ...ClassroomMapper.assignment(course, work, submission, now),
       description: ClassroomMapper.value(work.description),
       materials: (work.materials ?? []).map(ClassroomMapper.material),
-      submission: submission ? ClassroomMapper.submission(submission) : undefined,
+      rubrics: rubrics.map(ClassroomMapper.rubric),
+      submission: submission ? ClassroomMapper.submission(submission, due, now) : undefined,
     };
   }
 
-  static submission(submission: Submission): SubmissionSummary {
+  static submission(submission: Submission, due?: Date, now = Date.now()): SubmissionSummary {
+    const history = ClassroomMapper.history(submission);
+    const turnedInAt =
+      history.filter((event) => event.state === 'TURNED_IN').at(-1)?.at ??
+      (submission.state === 'TURNED_IN' ? ClassroomMapper.value(submission.updateTime) : undefined);
+    const finished = submission.state === 'TURNED_IN' || submission.state === 'RETURNED';
+    const end = finished ? (turnedInAt ? Date.parse(turnedInAt) : undefined) : now;
     return {
       id: ClassroomMapper.value(submission.id),
       state: ClassroomMapper.value(submission.state),
@@ -156,7 +222,68 @@ export class ClassroomMapper {
       draftGrade: ClassroomMapper.value(submission.draftGrade),
       attachments: (submission.assignmentSubmission?.attachments ?? []).map(ClassroomMapper.attachment),
       updatedAt: ClassroomMapper.value(submission.updateTime),
+      turnedInAt,
+      daysLate: ClassroomMapper.daysLate(due, end),
+      history,
       link: ClassroomMapper.value(submission.alternateLink),
+    };
+  }
+
+  static history(submission: Submission): SubmissionEvent[] {
+    const events = (submission.submissionHistory ?? []).map((entry): SubmissionEvent => {
+      if (entry.stateHistory) {
+        return {
+          at: ClassroomMapper.value(entry.stateHistory.stateTimestamp),
+          state: ClassroomMapper.value(entry.stateHistory.state),
+        };
+      }
+      const grade = entry.gradeHistory;
+      return {
+        at: ClassroomMapper.value(grade?.gradeTimestamp),
+        grade: ClassroomMapper.value(grade?.pointsEarned),
+        maxPoints: ClassroomMapper.value(grade?.maxPoints),
+        change: ClassroomMapper.value(grade?.gradeChangeType),
+      };
+    });
+    return events.sort((a, b) => (a.at ? Date.parse(a.at) : 0) - (b.at ? Date.parse(b.at) : 0));
+  }
+
+  static daysLate(due: Date | undefined, end: number | undefined): number | undefined {
+    if (!due || end === undefined || Number.isNaN(end) || end <= due.getTime()) return undefined;
+    return Math.ceil((end - due.getTime()) / 86_400_000);
+  }
+
+  static rubric(rubric: Rubric): RubricSummary {
+    const criteria = (rubric.criteria ?? []).map((criterion): RubricCriterion => ({
+      title: ClassroomMapper.value(criterion.title),
+      description: ClassroomMapper.value(criterion.description),
+      levels: (criterion.levels ?? []).map((level) => ({
+        title: ClassroomMapper.value(level.title),
+        description: ClassroomMapper.value(level.description),
+        points: ClassroomMapper.value(level.points),
+      })),
+    }));
+    const tops = criteria.map((criterion) => Math.max(...criterion.levels.map((level) => level.points ?? Number.NaN)));
+    const scored = tops.length > 0 && tops.every((value) => Number.isFinite(value));
+    return { id: rubric.id ?? '', maxPoints: scored ? tops.reduce((sum, value) => sum + value, 0) : undefined, criteria };
+  }
+
+  static topic(course: CourseSummary, topic: Topic): TopicSummary {
+    return {
+      courseId: course.id,
+      courseName: course.name,
+      id: topic.topicId ?? '',
+      name: topic.name ?? 'Untitled topic',
+      updatedAt: ClassroomMapper.value(topic.updateTime),
+    };
+  }
+
+  static person(role: PersonSummary['role'], person: Teacher | Student): PersonSummary {
+    return {
+      role,
+      userId: person.userId ?? '',
+      name: person.profile?.name?.fullName ?? 'Unknown',
+      email: ClassroomMapper.value(person.profile?.emailAddress),
     };
   }
 
@@ -206,7 +333,11 @@ export class ClassroomMapper {
       };
     }
     if (material.form) {
-      return { kind: 'form', title: ClassroomMapper.value(material.form.title), url: ClassroomMapper.value(material.form.formUrl) };
+      return {
+        kind: 'form',
+        title: ClassroomMapper.value(material.form.title),
+        url: ClassroomMapper.value(material.form.formUrl),
+      };
     }
     return { kind: 'unknown' };
   }
@@ -221,7 +352,11 @@ export class ClassroomMapper {
       };
     }
     if (attachment.link) {
-      return { kind: 'link', title: ClassroomMapper.value(attachment.link.title), url: ClassroomMapper.value(attachment.link.url) };
+      return {
+        kind: 'link',
+        title: ClassroomMapper.value(attachment.link.title),
+        url: ClassroomMapper.value(attachment.link.url),
+      };
     }
     if (attachment.youTubeVideo) {
       return {
@@ -231,7 +366,11 @@ export class ClassroomMapper {
       };
     }
     if (attachment.form) {
-      return { kind: 'form', title: ClassroomMapper.value(attachment.form.title), url: ClassroomMapper.value(attachment.form.formUrl) };
+      return {
+        kind: 'form',
+        title: ClassroomMapper.value(attachment.form.title),
+        url: ClassroomMapper.value(attachment.form.formUrl),
+      };
     }
     return { kind: 'unknown' };
   }

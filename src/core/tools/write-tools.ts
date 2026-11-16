@@ -12,7 +12,8 @@ export class UploadToDriveTool extends Tool<typeof uploadShape> {
   override readonly feature: Feature = 'write';
   readonly name = 'upload_to_drive';
   readonly title = 'Upload file to Drive';
-  readonly description = 'Upload a local file to the student\'s Google Drive and return its fileId and link, ready to attach to an assignment.';
+  readonly description =
+    "Upload a local file to the student's Google Drive and return its fileId and link, ready to attach to an assignment.";
   readonly shape = uploadShape;
 
   protected async execute(input: ToolInput<typeof uploadShape>, services: ServiceContainer) {
@@ -31,7 +32,7 @@ export class AttachToAssignmentTool extends Tool<typeof attachShape> {
   readonly name = 'attach_to_assignment';
   readonly title = 'Attach file to assignment';
   readonly description =
-    'Attach a Google Drive file to the student\'s submission. Google may block this for assignments created in the Classroom website; the error then explains how to attach it manually. Only use when the student asks.';
+    "Attach a Google Drive file to the student's submission. Google may block this for assignments created in the Classroom website; the error then explains how to attach it manually. Only use when the student asks.";
   readonly shape = attachShape;
 
   protected async execute(input: ToolInput<typeof attachShape>, services: ServiceContainer) {
@@ -42,7 +43,9 @@ export class AttachToAssignmentTool extends Tool<typeof attachShape> {
 const turnInShape = {
   courseId: fields.courseId,
   assignmentId: fields.assignmentId,
-  confirm: z.literal(true).describe('Must be true. Set it only after the student explicitly confirmed in this conversation that they want to submit.'),
+  confirm: z
+    .literal(true)
+    .describe('Must be true. Set it only after the student explicitly confirmed in this conversation that they want to submit.'),
 };
 
 export class TurnInTool extends Tool<typeof turnInShape> {
@@ -50,7 +53,7 @@ export class TurnInTool extends Tool<typeof turnInShape> {
   readonly name = 'turn_in';
   readonly title = 'Turn in assignment';
   readonly description =
-    'Turn in (submit) the student\'s work for an assignment. Always show the assignment title and attachments and ask the student to confirm before calling.';
+    "Turn in (submit) the student's work for an assignment. Always show the assignment title and attachments and ask the student to confirm before calling.";
   readonly shape = turnInShape;
 
   override get annotations(): ToolAnnotations {
@@ -71,7 +74,8 @@ export class AddToCalendarTool extends Tool<typeof calendarShape> {
   override readonly feature: Feature = 'write';
   readonly name = 'add_to_calendar';
   readonly title = 'Add due date to Calendar';
-  readonly description = 'Create a Google Calendar event ending at the assignment\'s due time, with reminders 1 day and 1 hour before.';
+  readonly description =
+    "Create a Google Calendar event ending at the assignment's due time, with reminders 1 day and 1 hour before.";
   readonly shape = calendarShape;
 
   protected async execute(input: ToolInput<typeof calendarShape>, services: ServiceContainer) {

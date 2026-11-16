@@ -18,6 +18,7 @@ export abstract class Tool<Shape extends ZodRawShape = ZodRawShape> {
   abstract readonly description: string;
   abstract readonly shape: Shape;
   readonly feature: Feature = 'read';
+  readonly output?: ZodRawShape;
 
   get annotations(): ToolAnnotations {
     const readOnly = this.feature !== 'write';

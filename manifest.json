@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "song-ngan",
   "display_name": "SongNgan for Google Classroom",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Let Claude see your Google Classroom: classes, assignments, due dates, attached files and grades. Runs only on your computer.",
   "long_description": "SongNgan connects Claude to your own Google Classroom account. Ask what is due this week, get assignment instructions, read attached PDFs, Docs and Slides, check grades, and optionally upload files, turn in work and add due dates to Google Calendar. Your Google token stays in your computer's keychain; nothing passes through a third-party server.",
   "author": {
@@ -17,22 +17,13 @@
   "documentation": "https://github.com/fluki3-06s/songngan-mcp/#install",
   "support": "https://github.com/fluki3-06s/songngan-mcp/issues",
   "license": "MIT",
-  "keywords": [
-    "google-classroom",
-    "classroom",
-    "students",
-    "homework",
-    "assignments"
-  ],
+  "keywords": ["google-classroom", "classroom", "students", "homework", "assignments"],
   "server": {
     "type": "node",
     "entry_point": "dist/index.js",
     "mcp_config": {
       "command": "node",
-      "args": [
-        "${__dirname}/dist/index.js",
-        "serve"
-      ],
+      "args": ["${__dirname}/dist/index.js", "serve"],
       "env": {
         "SONGNGAN_CLIENT_SECRET": "${user_config.client_secret}",
         "SONGNGAN_ENABLE_FILES": "${user_config.enable_files}",
@@ -88,6 +79,18 @@
       "description": "Learning materials posted in a class"
     },
     {
+      "name": "list_topics",
+      "description": "Topics (units) used to group classwork"
+    },
+    {
+      "name": "search",
+      "description": "Find assignments, announcements and materials by keyword"
+    },
+    {
+      "name": "list_people",
+      "description": "Teachers and classmates in a class"
+    },
+    {
       "name": "get_grades",
       "description": "Graded work and per-class totals"
     },
@@ -121,11 +124,7 @@
     }
   ],
   "compatibility": {
-    "platforms": [
-      "darwin",
-      "win32",
-      "linux"
-    ],
+    "platforms": ["darwin", "win32", "linux"],
     "runtimes": {
       "node": ">=20.0.0"
     }

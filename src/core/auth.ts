@@ -5,6 +5,7 @@ import { openInBrowser } from './browser.js';
 import { ClientSecret, type ClientSource } from './client-secret.js';
 import type { AppConfig } from './config.js';
 import { AuthRequiredError, ErrorFormatter, SongNganError } from './errors.js';
+import { ResultPage } from './result-page.js';
 import type { TokenStore } from './token-store.js';
 
 export interface AuthStatus {
@@ -227,14 +228,7 @@ export class AuthManager {
     });
   }
 
-  private static escape(text: string): string {
-    return text.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
-  }
-
   private static resultPage(success: boolean, detail?: string): string {
-    const title = success ? 'Connected' : 'Sign-in failed';
-    const body = success ? 'You can close this tab and go back to your AI.' : 'Please try again.';
-    const color = success ? '#16a34a' : '#dc2626';
-    return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SongNgan</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0;background:#f8fafc;color:#0f172a"><main style="text-align:center;padding:2rem"><div style="font-size:3rem;color:${color}">${success ? '✓' : '✕'}</div><h1 style="margin:.5rem 0">SongNgan</h1><p style="font-size:1.1rem;margin:.25rem 0">${title}</p><p style="color:#475569">${body}</p>${detail ? `<pre style="white-space:pre-wrap;text-align:left;max-width:40rem;background:#fee2e2;color:#7f1d1d;padding:1rem;border-radius:.5rem">${AuthManager.escape(detail)}</pre>` : ''}</main></body></html>`;
+    return ResultPage.render(success, detail);
   }
 }

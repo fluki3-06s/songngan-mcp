@@ -135,7 +135,11 @@ export class OfficeExtractor {
         const column = OfficeExtractor.columnIndex(OfficeExtractor.attribute(attributes, 'r'));
         cells[column >= 0 ? column : cells.length] = OfficeExtractor.cellValue(attributes, body, shared);
       }
-      lines.push(Array.from(cells, (value) => value ?? '').join('\t').replace(/\t+$/, ''));
+      lines.push(
+        Array.from(cells, (value) => value ?? '')
+          .join('\t')
+          .replace(/\t+$/, ''),
+      );
     }
     while (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
     return lines.join('\n');

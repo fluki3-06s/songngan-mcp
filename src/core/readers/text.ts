@@ -16,7 +16,8 @@ const NAMED_ENTITIES: Readonly<Record<string, string>> = {
   middot: '·',
 };
 
-const BLOCK_END = /<\/(p|div|section|article|aside|header|footer|main|nav|h[1-6]|li|tr|table|ul|ol|dl|dt|dd|blockquote|pre|figure|figcaption)>/gi;
+const BLOCK_END =
+  /<\/(p|div|section|article|aside|header|footer|main|nav|h[1-6]|li|tr|table|ul|ol|dl|dt|dd|blockquote|pre|figure|figcaption)>/gi;
 
 export interface PageText {
   title?: string;

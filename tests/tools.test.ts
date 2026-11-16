@@ -9,14 +9,18 @@ const noServices = undefined as unknown as ServiceContainer;
 
 describe('ToolRegistry', () => {
   it('exposes only read tools by default', () => {
-    const names = registry().list().map((tool) => tool.name);
+    const names = registry()
+      .list()
+      .map((tool) => tool.name);
     expect(names).toContain('weekly_digest');
     expect(names).not.toContain('read_material');
     expect(names).not.toContain('turn_in');
   });
 
   it('adds file and write tools when enabled', () => {
-    const names = registry('files', 'write').list().map((tool) => tool.name);
+    const names = registry('files', 'write')
+      .list()
+      .map((tool) => tool.name);
     expect(names).toEqual(expect.arrayContaining(['read_material', 'upload_to_drive', 'turn_in', 'add_to_calendar']));
   });
 
@@ -45,7 +49,10 @@ describe('SchemaExporter', () => {
   const tools = registry('files', 'write').list();
 
   it('exports OpenAI function tools', () => {
-    const [first] = new SchemaExporter(tools).export('openai') as Array<{ type: string; function: { name: string; parameters: { type: string } } }>;
+    const [first] = new SchemaExporter(tools).export('openai') as Array<{
+      type: string;
+      function: { name: string; parameters: { type: string } };
+    }>;
     expect(first?.type).toBe('function');
     expect(first?.function.parameters.type).toBe('object');
   });

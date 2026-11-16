@@ -12,7 +12,12 @@ const zip = (files: Record<string, string>) =>
 
 describe('PngEncoder', () => {
   it('writes a valid PNG with correct header and chunk checksums', () => {
-    const png = PngEncoder.encode({ data: Uint8Array.of(255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 255), width: 2, height: 2, channels: 3 });
+    const png = PngEncoder.encode({
+      data: Uint8Array.of(255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 255),
+      width: 2,
+      height: 2,
+      channels: 3,
+    });
     expect([...png.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
     expect(png.readUInt32BE(16)).toBe(2);
     expect(png.readUInt32BE(20)).toBe(2);
@@ -28,7 +33,10 @@ describe('PngEncoder', () => {
   });
 
   it('downscales large images by averaging pixels', () => {
-    const scaled = PngEncoder.downscale({ data: Uint8Array.of(0, 100, 200, 100, 0, 100, 200, 100, 0, 0, 0, 0, 0, 0, 0, 0), width: 4, height: 4, channels: 1 }, 2);
+    const scaled = PngEncoder.downscale(
+      { data: Uint8Array.of(0, 100, 200, 100, 0, 100, 200, 100, 0, 0, 0, 0, 0, 0, 0, 0), width: 4, height: 4, channels: 1 },
+      2,
+    );
     expect(scaled.width).toBe(2);
     expect(scaled.height).toBe(2);
     expect(Array.from(scaled.data)).toEqual([50, 150, 0, 0]);
@@ -62,13 +70,15 @@ describe('OfficeExtractor', () => {
 
   it('reads every Excel sheet with shared strings, numbers and booleans', () => {
     const xlsx = zip({
-      'xl/workbook.xml': '<workbook><sheets><sheet name="Scores" sheetId="1" r:id="rId1"/><sheet name="Other" sheetId="2" r:id="rId2"/></sheets></workbook>',
+      'xl/workbook.xml':
+        '<workbook><sheets><sheet name="Scores" sheetId="1" r:id="rId1"/><sheet name="Other" sheetId="2" r:id="rId2"/></sheets></workbook>',
       'xl/_rels/workbook.xml.rels':
         '<Relationships><Relationship Id="rId1" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Target="worksheets/sheet2.xml"/></Relationships>',
       'xl/sharedStrings.xml': '<sst><si><t>Name</t></si><si><t>Score</t></si><si><r><t>Som</t></r><r><t>chai</t></r></si></sst>',
       'xl/worksheets/sheet1.xml':
         '<worksheet><sheetData><row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c></row><row r="2"/><row r="3"><c r="A3" t="s"><v>2</v></c><c r="C3"><v>95.5</v></c></row></sheetData></worksheet>',
-      'xl/worksheets/sheet2.xml': '<worksheet><sheetData><row r="1"><c r="A1" t="b"><v>1</v></c><c r="B1" t="inlineStr"><is><t>inline</t></is></c></row></sheetData></worksheet>',
+      'xl/worksheets/sheet2.xml':
+        '<worksheet><sheetData><row r="1"><c r="A1" t="b"><v>1</v></c><c r="B1" t="inlineStr"><is><t>inline</t></is></c></row></sheetData></worksheet>',
     });
     const text = OfficeExtractor.extract(xlsx, 'xlsx');
     expect(text).toContain('--- Sheet: Scores ---\nName\tScore\n\nSomchai\t\t95.5');
@@ -109,8 +119,14 @@ describe('TextTools', () => {
 
 describe('LinkResolver', () => {
   it('recognises Drive, Docs, Forms, YouTube and web links', () => {
-    expect(LinkResolver.classify('https://docs.google.com/document/d/1AbCdEfGhIjKlMn/edit')).toMatchObject({ kind: 'drive', fileId: '1AbCdEfGhIjKlMn' });
-    expect(LinkResolver.classify('https://drive.google.com/open?id=1AbCdEfGhIjKlMn')).toMatchObject({ kind: 'drive', fileId: '1AbCdEfGhIjKlMn' });
+    expect(LinkResolver.classify('https://docs.google.com/document/d/1AbCdEfGhIjKlMn/edit')).toMatchObject({
+      kind: 'drive',
+      fileId: '1AbCdEfGhIjKlMn',
+    });
+    expect(LinkResolver.classify('https://drive.google.com/open?id=1AbCdEfGhIjKlMn')).toMatchObject({
+      kind: 'drive',
+      fileId: '1AbCdEfGhIjKlMn',
+    });
     expect(LinkResolver.classify('https://forms.gle/abc').kind).toBe('form');
     expect(LinkResolver.classify('https://docs.google.com/forms/d/e/1FAIpQ/viewform').kind).toBe('form');
     expect(LinkResolver.classify('https://youtu.be/dQw4w9WgXcQ').kind).toBe('youtube');
@@ -121,7 +137,25 @@ describe('LinkResolver', () => {
 
 describe('GoogleFormParser', () => {
   it('extracts questions and choices from a public form page', () => {
-    const data = [null, ['Please answer', [[1, 'Your name', null, 0, [[11, null, 1]]], [2, 'Pick one', 'hint', 2, [[22, [['A'], ['B']], 0]]]], null, null, null, null, null, null, 'Quiz 1'], null, 'Quiz 1'];
+    const data = [
+      null,
+      [
+        'Please answer',
+        [
+          [1, 'Your name', null, 0, [[11, null, 1]]],
+          [2, 'Pick one', 'hint', 2, [[22, [['A'], ['B']], 0]]],
+        ],
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        'Quiz 1',
+      ],
+      null,
+      'Quiz 1',
+    ];
     const form = GoogleFormParser.parse(`<script>var FB_PUBLIC_LOAD_DATA_ = ${JSON.stringify(data)};</script>`);
     expect(form?.title).toBe('Quiz 1');
     expect(form?.questions).toEqual([

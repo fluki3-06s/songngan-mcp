@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ASSIGNMENT_STATUSES } from '../classroom-mapper.js';
 import type { ServiceContainer } from '../container.js';
 import { Tool, fields, type ToolInput } from './base.js';
+import { outputs } from './outputs.js';
 
 const listCoursesShape = {
   includeArchived: z.boolean().optional().describe('Also include archived classes. Default false.'),
@@ -10,8 +11,10 @@ const listCoursesShape = {
 export class ListCoursesTool extends Tool<typeof listCoursesShape> {
   readonly name = 'list_courses';
   readonly title = 'List classes';
-  readonly description = 'List the Google Classroom classes the student is enrolled in, with their IDs. Use the IDs with other tools.';
+  readonly description =
+    'List the Google Classroom classes the student is enrolled in, with their IDs. Use the IDs with other tools.';
   readonly shape = listCoursesShape;
+  override readonly output = outputs.courses;
 
   protected async execute(input: ToolInput<typeof listCoursesShape>, services: ServiceContainer) {
     const courses = await (await services.study()).courses(input.includeArchived ?? false);
@@ -21,11 +24,18 @@ export class ListCoursesTool extends Tool<typeof listCoursesShape> {
 
 const listAssignmentsShape = {
   courseId: fields.courseId.optional().describe('Only this class. Omit to search every active class.'),
+  topicId: z.string().min(1).optional().describe('Only assignments in this topic (unit). Topic IDs come from list_topics.'),
   status: z
     .array(z.enum(ASSIGNMENT_STATUSES))
     .optional()
     .describe('Filter by status: pending (not submitted, not late yet), overdue, submitted, returned (graded/returned).'),
-  dueWithinDays: z.number().int().min(0).max(365).optional().describe('Only work due within this many days from now (overdue work is kept when its status is requested).'),
+  dueWithinDays: z
+    .number()
+    .int()
+    .min(0)
+    .max(365)
+    .optional()
+    .describe('Only work due within this many days from now (overdue work is kept when its status is requested).'),
   limit: z.number().int().min(1).max(200).optional().describe('Maximum results. Default 50.'),
 };
 
@@ -35,10 +45,14 @@ export class ListAssignmentsTool extends Tool<typeof listAssignmentsShape> {
   readonly description =
     'List assignments across classes with the student\'s own status and grade, sorted by due date. Use status ["pending","overdue"] to see what still needs to be done.';
   readonly shape = listAssignmentsShape;
+  override readonly output = outputs.assignments;
 
   protected async execute(input: ToolInput<typeof listAssignmentsShape>, services: ServiceContainer) {
-    const assignments = await (await services.study()).assignments({
+    const assignments = await (
+      await services.study()
+    ).assignments({
       courseId: input.courseId,
+      topicId: input.topicId,
       statuses: input.status,
       dueWithinDays: input.dueWithinDays,
       limit: input.limit,
@@ -56,7 +70,7 @@ export class GetAssignmentTool extends Tool<typeof getAssignmentShape> {
   readonly name = 'get_assignment';
   readonly title = 'Get assignment details';
   readonly description =
-    'Get the full instructions of one assignment, its attached materials (with Drive fileIds for read_material) and the student\'s submission state, attachments and grade.';
+    "Get the full instructions of one assignment, its topic, attached materials (with Drive fileIds for read_material), grading rubric (criteria and levels) and the student's submission: state, attachments, grade, when it was turned in, days late and the full history of state and grade changes.";
   readonly shape = getAssignmentShape;
 
   protected async execute(input: ToolInput<typeof getAssignmentShape>, services: ServiceContainer) {
@@ -75,6 +89,7 @@ export class ListAnnouncementsTool extends Tool<typeof listAnnouncementsShape> {
   readonly title = 'List announcements';
   readonly description = 'List recent announcements (stream posts) from teachers, newest first, including attached materials.';
   readonly shape = listAnnouncementsShape;
+  override readonly output = outputs.announcements;
 
   protected async execute(input: ToolInput<typeof listAnnouncementsShape>, services: ServiceContainer) {
     const announcements = await (await services.study()).announcements(input);
@@ -108,6 +123,7 @@ export class GetGradesTool extends Tool<typeof getGradesShape> {
   readonly title = 'Get grades';
   readonly description = 'Get graded assignments and a per-class total (points earned / possible and percent).';
   readonly shape = getGradesShape;
+  override readonly output = outputs.grades;
 
   protected async execute(input: ToolInput<typeof getGradesShape>, services: ServiceContainer) {
     return (await services.study()).grades(input.courseId);
@@ -124,8 +140,67 @@ export class WeeklyDigestTool extends Tool<typeof digestShape> {
   readonly description =
     'One-call overview for the student: overdue work, work due in the next N days and recent announcements across all classes. Best first call for "what do I need to do?".';
   readonly shape = digestShape;
+  override readonly output = outputs.digest;
 
   protected async execute(input: ToolInput<typeof digestShape>, services: ServiceContainer) {
     return (await services.study()).digest(input.days ?? 7);
+  }
+}
+
+const listTopicsShape = {
+  courseId: fields.courseId.optional().describe('Only this class. Omit for every active class.'),
+};
+
+export class ListTopicsTool extends Tool<typeof listTopicsShape> {
+  readonly name = 'list_topics';
+  readonly title = 'List topics';
+  readonly description =
+    'List the topics (units or chapters) teachers use to group classwork. Pass a topicId to list_assignments to see the work in one unit.';
+  readonly shape = listTopicsShape;
+  override readonly output = outputs.topics;
+
+  protected async execute(input: ToolInput<typeof listTopicsShape>, services: ServiceContainer) {
+    const topics = await (await services.study()).topics(input.courseId);
+    return { count: topics.length, topics };
+  }
+}
+
+const searchShape = {
+  query: z.string().trim().min(1).max(200).describe('Words to look for, in any language. Every word must appear.'),
+  courseId: fields.courseId.optional().describe('Only this class. Omit to search every active class.'),
+  kinds: z
+    .array(z.enum(['assignment', 'announcement', 'material']))
+    .optional()
+    .describe('Limit to these kinds. Default all three.'),
+  limit: z.number().int().min(1).max(50).optional().describe('Maximum results. Default 20.'),
+};
+
+export class SearchTool extends Tool<typeof searchShape> {
+  readonly name = 'search';
+  readonly title = 'Search classes';
+  readonly description =
+    'Find assignments, announcements and class materials by keyword across classes, matching titles, instructions, topics and attachment names. Use it when the student names a piece of work without its class, e.g. "where is the Titanic assignment".';
+  readonly shape = searchShape;
+  override readonly output = outputs.search;
+
+  protected async execute(input: ToolInput<typeof searchShape>, services: ServiceContainer) {
+    const results = await (await services.study()).search(input);
+    return { query: input.query, count: results.length, results };
+  }
+}
+
+const listPeopleShape = {
+  courseId: fields.courseId,
+};
+
+export class ListPeopleTool extends Tool<typeof listPeopleShape> {
+  readonly name = 'list_people';
+  readonly title = 'List people';
+  readonly description = 'List the teachers and classmates in one class by name.';
+  readonly shape = listPeopleShape;
+  override readonly output = outputs.people;
+
+  protected async execute(input: ToolInput<typeof listPeopleShape>, services: ServiceContainer) {
+    return (await services.study()).people(input.courseId);
   }
 }

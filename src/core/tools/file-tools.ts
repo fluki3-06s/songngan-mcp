@@ -12,8 +12,15 @@ const readOptions = {
   includeImages: z
     .boolean()
     .optional()
-    .describe('PDF only: also return the pictures, charts and diagrams embedded in the pages. Scanned pages are always returned as images.'),
-  startPage: z.number().int().min(1).optional().describe('PDF only: first page to take images from. Use the page suggested in the note.'),
+    .describe(
+      'PDF only: also return the pictures, charts and diagrams embedded in the pages. Scanned pages are always returned as images.',
+    ),
+  startPage: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe('PDF only: first page to take images from. Use the page suggested in the note.'),
   maxImages: z.number().int().min(1).max(8).optional().describe('Maximum number of images to return. Default 4.'),
 };
 
@@ -39,7 +46,7 @@ const downloadShape = {
     .string()
     .min(1)
     .optional()
-    .describe('Absolute local folder to save into. Default: the Downloads\\SongNgan folder in the user\'s home.'),
+    .describe("Absolute local folder to save into. Default: the Downloads\\SongNgan folder in the user's home."),
 };
 
 export class DownloadMaterialTool extends Tool<typeof downloadShape> {

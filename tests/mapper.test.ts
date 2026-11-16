@@ -11,7 +11,9 @@ describe('ClassroomMapper.dueDate', () => {
   });
 
   it('defaults to the end of the day when time is missing', () => {
-    expect(ClassroomMapper.dueDate({ dueDate: { year: 2026, month: 1, day: 2 } })?.toISOString()).toBe('2026-01-02T23:59:00.000Z');
+    expect(ClassroomMapper.dueDate({ dueDate: { year: 2026, month: 1, day: 2 } })?.toISOString()).toBe(
+      '2026-01-02T23:59:00.000Z',
+    );
   });
 
   it('returns undefined without a due date', () => {
